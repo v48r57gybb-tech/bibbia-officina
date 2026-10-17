@@ -26,6 +26,7 @@ label{display:block;font-size:12px;color:#94a3b8;margin-bottom:4px}
 .hidden{display:none}
 .stat{display:inline-block;background:#334155;border-radius:8px;padding:12px 16px;margin:4px}
 .result{background:#0f172a;border-radius:8px;padding:12px;margin-top:8px;font-family:monospace}
+@media(max-width:700px){body{flex-direction:column}#sidebar{width:100%;height:auto}#nav{display:flex;flex-wrap:wrap}.nav-item{padding:8px 10px}}
 </style>
 </head>
 <body>
@@ -43,7 +44,7 @@ macchine:[{id:uid(),nome:'Fresatrice CNC 1',tipo:'Fresatrice',marca:'Haas',model
 utensili:[{id:uid(),codice:'FRA-001',tipo:'Fresa',diametro:10,materiale:'Carburo',vitaUtile:120}],
 materiali:[{id:uid(),nome:'Acciaio C45',tipo:'Acciaio',durezza:'HB 200'}],
 lavorazioni:[],parametri:[],fornitori:[],clienti:[],ordini:[],manutenzioni:[],documenti:[],
-knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'}]};}
+knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'},{id:uid(),titolo:'Maschiatura metrica',categoria:'Maschiatura',contenuto:'Per maschi metrici, il foro pre-maschiatura è circa D meno il passo P.'},{id:uid(),titolo:'Perforazione acciaio',categoria:'Trapano',contenuto:'Per acciaio con punta HSS, Vc consigliata 20-30 m/min.'}]};}
 let DB=JSON.parse(localStorage.getItem(LS)||'null')||seed();
 function save(){localStorage.setItem(LS,JSON.stringify(DB));}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/'/g,'&#39;');}
@@ -85,7 +86,11 @@ function calcolatori(){return `
 <div class='card'><h2>🧵 Calcolatrice maschiatura</h2>
 <label>Diametro nominale M (mm)</label><input id='md' type='number' value='6'>
 <label>Passo P (mm)</label><input id='mp' type='number' value='1'>
-<button data-act='calc-maschio'>Calcola</button><div class='result' id='res-maschio'>-</div></div>`;}
+<button data-act='calc-maschio'>Calcola</button><div class='result' id='res-maschio'>-</div></div>
+<div class='card'><h2>🔩 Calcolatrice perforazione</h2>
+<label>Diametro punta D (mm)</label><input id='pd' type='number' value='8'>
+<label>Vc (m/min)</label><input id='pvc' type='number' value='25'>
+<button data-act='calc-trapano'>Calcola</button><div class='result' id='res-trapano'>-</div></div>`;}
 function settingsView(){return `<div class='card'><h2>⚙️ Impostazioni</h2>
 <button data-act='export'>⬇️ Esporta JSON</button>
 <label>Importa JSON</label><input type='file' id='import' accept='.json'>
@@ -109,9 +114,13 @@ const n=1000*vc/(Math.PI*d),vf=n*z*fz,q=ap*ae*vf/1000;
 document.getElementById('res-taglio').innerHTML=`n = ${n.toFixed(0)} giri/min<br>vf = ${vf.toFixed(0)} mm/min<br>Q = ${q.toFixed(1)} cm³/min`;}
 function calcMaschio(){const md=+document.getElementById('md').value,mp=+document.getElementById('mp').value;const hole=md-mp;
 document.getElementById('res-maschio').innerHTML=`Foro pre-maschiatura = ${hole.toFixed(2)} mm<br>Usa punta da ${hole.toFixed(1)} mm`;}
+function calcTrapano(){const pd=+document.getElementById('pd').value,pvc=+document.getElementById('pvc').value;const n=1000*pvc/(Math.PI*pd);
+document.getElementById('res-trapano').innerHTML=`n = ${n.toFixed(0)} giri/min`;}
 function ask(){const q=document.getElementById('ask').value.toLowerCase();let ans='Nessun risultato. Prova con: fresatura, maschiatura, velocità, acciaio.';
 const hits=DB.knowledge.filter(k=>(k.titolo+' '+k.categoria+' '+k.contenuto).toLowerCase().includes(q));
 if(q&&hits.length)ans=hits.map(h=>`<b>${esc(h.titolo)}</b><br>${esc(h.contenuto)}`).join('<br><br>');
+const phits=DB.parametri.filter(p=>Object.values(p).some(v=>String(v).toLowerCase().includes(q)));
+if(phits.length)ans+='<br><br><b>Parametri trovati</b><br>'+phits.map(p=>`Vc ${p.vc} - Fz ${p.fz} - Ap ${p.ap} - Ae ${p.ae}`).join('<br>');
 document.getElementById('answer').innerHTML=ans;}
 function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bibbia-officina.json';a.click();}
 function render(){renderNav();const c=document.getElementById('content');
@@ -130,6 +139,7 @@ else if(act==='save')saveEntity(k,id);
 else if(act==='close')closeModal();
 else if(act==='calc-taglio')calcTaglio();
 else if(act==='calc-maschio')calcMaschio();
+else if(act==='calc-trapano')calcTrapano();
 else if(act==='ask')ask();
 else if(act==='export')exportJSON();
 else if(act==='reset'){if(confirm('Reset?')){localStorage.removeItem(LS);DB=seed();save();render();}}});
