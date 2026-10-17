@@ -1,48 +1,140 @@
 <!doctype html>
-<html lang="it">
+<html lang='it'>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bibbia dell’Officina</title>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0f172a">
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Bibbia Officina</title>
 <style>
-:root{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}header{padding:18px;background:#111827;border-bottom:1px solid #334155;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:20px;margin:0}main{max-width:1100px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid #334155;border-radius:14px;padding:16px;margin-bottom:16px}input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #475569;background:#0b1220;color:var(--text);margin-bottom:10px}label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}button{background:var(--accent);border:0;color:#04283a;font-weight:700;padding:10px 14px;border-radius:10px;cursor:pointer}button.secondary{background:#334155;color:#e2e8f0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.case{border-left:4px solid var(--accent);padding:12px;border-radius:10px;background:#0b1220;margin-bottom:10px}.case h3{margin:0 0 6px}.small{font-size:12px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.tag{display:inline-block;background:#334155;color:#e2e8f0;padding:2px 8px;border-radius:999px;font-size:12px;margin-right:6px}#status{font-size:13px;color:var(--muted)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;height:100vh}
+#sidebar{width:230px;background:#1e293b;padding:16px;overflow-y:auto}
+#sidebar h1{font-size:18px;margin-bottom:16px;color:#38bdf8}
+.nav-item{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:4px}
+.nav-item:hover,.nav-item.active{background:#334155}
+#main{flex:1;padding:24px;overflow-y:auto}
+.card{background:#1e293b;border-radius:12px;padding:16px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:8px;border-bottom:1px solid #334155;text-align:left}
+th{color:#94a3b8;font-weight:600}
+button{background:#38bdf8;color:#0f172a;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;margin:4px 4px 4px 0}
+button.secondary{background:#334155;color:#e2e8f0}
+input,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
+label{display:block;font-size:12px;color:#94a3b8;margin-bottom:4px}
+#search{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
+.modal-content{background:#1e293b;padding:24px;border-radius:12px;width:420px;max-height:80vh;overflow-y:auto}
+.hidden{display:none}
+.stat{display:inline-block;background:#334155;border-radius:8px;padding:12px 16px;margin:4px}
+.result{background:#0f172a;border-radius:8px;padding:12px;margin-top:8px;font-family:monospace}
 </style>
 </head>
 <body>
-<header>
-<h1>⚙️ Bibbia dell’Officina</h1>
-<div class="actions">
-<button class="secondary" id="exportBtn">Esporta backup</button>
-<label class="secondary" style="background:#334155;padding:10px 14px;border-radius:10px;cursor:pointer">Importa<input type="file" id="importInput" accept="application/json" hidden></label>
+<div id='sidebar'><h1>⚙️ Bibbia Officina</h1><div id='nav'></div></div>
+<div id='main'>
+<input id='search' placeholder='🔍 Cerca in tutta la bibbia...'>
+<div id='content'></div>
 </div>
-</header>
-<main>
-<div class="card">
-<h2>Nuovo caso di lavorazione</h2>
-<div class="grid">
-<div><label>Titolo</label><input id="title" placeholder="Es. Fresatura flangia"></div>
-<div><label>Cliente / codice interno</label><input id="customer"></div>
-<div><label>Codice pezzo</label><input id="part"></div>
-<div><label>Materiale</label><input id="material"></div>
-<div><label>Macchina</label><input id="machine"></div>
-<div><label>Operazione</label><select id="operation"><option>Fresatura</option><option>Tornitura</option><option>Foratura</option><option>Maschiatura</option><option>Tastatura</option><option>Altra</option></select></div>
-<div><label>Utensile</label><input id="tool"></div>
-<div><label>Parametri / note</label><input id="parameters" placeholder="Vc, n, Vf, ap, ae…"></div>
-</div>
-<label>Anomalie, soluzioni e risultati</label>
-<textarea id="notes" rows="4" placeholder="Problema incontrato, prove, soluzione adottata, risultato"></textarea>
-<div class="actions"><button id="saveBtn">Salva caso</button><button class="secondary" id="clearBtn">Pulisci</button></div>
-<p id="status"></p>
-</div>
-<div class="card">
-<h2>Casi salvati</h2>
-<input id="search" placeholder="Cerca per titolo, cliente, pezzo, materiale, macchina, utensile…">
-<div id="cases"></div>
-</div>
-</main>
-<script src="db.js"></script>
-<script src="app.js"></script>
+<div id='modal' class='modal hidden'><div class='modal-content' id='modal-body'></div></div>
+<script>
+const LS='bibbiaOfficinaDB';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function seed(){return{
+macchine:[{id:uid(),nome:'Fresatrice CNC 1',tipo:'Fresatrice',marca:'Haas',modello:'VF-2',anno:2021,stato:'Operativa'}],
+utensili:[{id:uid(),codice:'FRA-001',tipo:'Fresa',diametro:10,materiale:'Carburo',vitaUtile:120}],
+materiali:[{id:uid(),nome:'Acciaio C45',tipo:'Acciaio',durezza:'HB 200'}],
+lavorazioni:[],parametri:[],fornitori:[],clienti:[],ordini:[],manutenzioni:[],documenti:[],
+knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'}]};}
+let DB=JSON.parse(localStorage.getItem(LS)||'null')||seed();
+function save(){localStorage.setItem(LS,JSON.stringify(DB));}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/'/g,'&#39;');}
+const SCHEMA={
+macchine:{label:'Macchine',icon:'⚙️',fields:[{k:'nome',l:'Nome'},{k:'tipo',l:'Tipo'},{k:'marca',l:'Marca'},{k:'modello',l:'Modello'},{k:'anno',l:'Anno',t:'number'},{k:'stato',l:'Stato'}]},
+utensili:{label:'Utensili',icon:'🔧',fields:[{k:'codice',l:'Codice'},{k:'tipo',l:'Tipo'},{k:'diametro',l:'Diametro (mm)',t:'number'},{k:'materiale',l:'Materiale'},{k:'vitaUtile',l:'Vita utile (min)',t:'number'}]},
+materiali:{label:'Materiali',icon:'🧱',fields:[{k:'nome',l:'Nome'},{k:'tipo',l:'Tipo'},{k:'durezza',l:'Durezza'}]},
+lavorazioni:{label:'Lavorazioni',icon:'🛠️',fields:[{k:'nome',l:'Nome'},{k:'macchina',l:'Macchina',r:'macchine'},{k:'utensile',l:'Utensile',r:'utensili'},{k:'materiale',l:'Materiale',r:'materiali'},{k:'tempo',l:'Tempo (min)',t:'number'}]},
+parametri:{label:'Parametri',icon:'📐',fields:[{k:'lavorazione',l:'Lavorazione',r:'lavorazioni'},{k:'vc',l:'Vc (m/min)',t:'number'},{k:'fz',l:'Fz (mm/dente)',t:'number'},{k:'ap',l:'Ap (mm)',t:'number'},{k:'ae',l:'Ae (mm)',t:'number'},{k:'nota',l:'Nota'}]},
+fornitori:{label:'Fornitori',icon:'🚚',fields:[{k:'nome',l:'Nome'},{k:'contatto',l:'Contatto'},{k:'email',l:'Email'},{k:'telefono',l:'Telefono'}]},
+clienti:{label:'Clienti',icon:'🏢',fields:[{k:'nome',l:'Nome'},{k:'contatto',l:'Contatto'},{k:'email',l:'Email'},{k:'telefono',l:'Telefono'}]},
+ordini:{label:'Ordini',icon:'📦',fields:[{k:'codice',l:'Codice'},{k:'cliente',l:'Cliente',r:'clienti'},{k:'consegna',l:'Consegna'},{k:'stato',l:'Stato'},{k:'note',l:'Note'}]},
+manutenzioni:{label:'Manutenzioni',icon:'🧰',fields:[{k:'macchina',l:'Macchina',r:'macchine'},{k:'data',l:'Data'},{k:'tipo',l:'Tipo'},{k:'descrizione',l:'Descrizione'},{k:'prossimo',l:'Prossimo intervento'}]},
+documenti:{label:'Documenti',icon:'📄',fields:[{k:'titolo',l:'Titolo'},{k:'tipo',l:'Tipo'},{k:'link',l:'Link'},{k:'note',l:'Note'}]},
+knowledge:{label:'Conoscenza',icon:'📚',fields:[{k:'titolo',l:'Titolo'},{k:'categoria',l:'Categoria'},{k:'contenuto',l:'Contenuto',t:'textarea'}]}};
+const SECTIONS=[{k:'dashboard',l:'Dashboard',i:'📊'},...Object.keys(SCHEMA).map(k=>({k,l:SCHEMA[k].label,i:SCHEMA[k].icon})),{k:'calcolatori',l:'Calcolatori',i:'🧮'},{k:'settings',l:'Impostazioni',i:'⚙️'}];
+let current='dashboard',query='';
+function nameOf(coll,id){const o=DB[coll].find(r=>r.id===id);return o?(o.nome||o.codice||o.titolo||''):'-';}
+function renderNav(){document.getElementById('nav').innerHTML=SECTIONS.map(s=>`<div class='nav-item ${s.k===current?'active':''}' data-k='${s.k}'>${s.i} ${s.l}</div>`).join('');}
+function entityView(key){const s=SCHEMA[key];const q=query.toLowerCase();
+const rows=DB[key].filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q)));
+return `<div class='card'><h2>${s.icon} ${s.label}</h2><button data-act='add' data-k='${key}'>+ Aggiungi</button>
+<table><tr>${s.fields.map(f=>`<th>${f.l}</th>`).join('')}<th>Azioni</th></tr>
+${rows.map(r=>`<tr>${s.fields.map(f=>`<td>${esc(f.r?nameOf(f.r,r[f.k]):r[f.k]||'')}</td>`).join('')}
+<td><button data-act='edit' data-k='${key}' data-id='${r.id}'>✏️</button><button data-act='del' data-k='${key}' data-id='${r.id}'>🗑️</button></td></tr>`).join('')}
+</table></div>`;}
+function dashboard(){const counts=Object.keys(SCHEMA).map(k=>`<span class='stat'>${SCHEMA[k].icon} ${SCHEMA[k].label}: <b>${DB[k].length}</b></span>`).join('');
+return `<div class='card'><h2>📊 Dashboard</h2><div>${counts}</div></div>
+<div class='card'><h2>🤖 Assistente rapido</h2><input id='ask' placeholder='Chiedi qualcosa...'><button data-act='ask'>Chiedi</button><div class='result' id='answer'>Scrivi una domanda sulla lavorazione o cerca nella conoscenza.</div></div>`;}
+function calcolatori(){return `
+<div class='card'><h2>🧮 Calcolatrice fresatura</h2>
+<label>Vc (m/min)</label><input id='vc' type='number' value='150'>
+<label>Diametro D (mm)</label><input id='d' type='number' value='10'>
+<label>Ap (mm)</label><input id='ap' type='number' value='2'>
+<label>Ae (mm)</label><input id='ae' type='number' value='5'>
+<label>Fz (mm/dente)</label><input id='fz' type='number' value='0.05'>
+<label>N° denti z</label><input id='z' type='number' value='4'>
+<button data-act='calc-taglio'>Calcola</button><div class='result' id='res-taglio'>-</div></div>
+<div class='card'><h2>🧵 Calcolatrice maschiatura</h2>
+<label>Diametro nominale M (mm)</label><input id='md' type='number' value='6'>
+<label>Passo P (mm)</label><input id='mp' type='number' value='1'>
+<button data-act='calc-maschio'>Calcola</button><div class='result' id='res-maschio'>-</div></div>`;}
+function settingsView(){return `<div class='card'><h2>⚙️ Impostazioni</h2>
+<button data-act='export'>⬇️ Esporta JSON</button>
+<label>Importa JSON</label><input type='file' id='import' accept='.json'>
+<button class='secondary' data-act='reset'>♻️ Reset dati</button></div>`;}
+function openForm(key,id){const s=SCHEMA[key];const item=id?DB[key].find(r=>r.id===id):{};
+document.getElementById('modal-body').innerHTML=`<h3>${id?'Modifica':'Nuovo'} ${s.label}</h3>
+${s.fields.map(f=>fieldHtml(f,item)).join('')}
+<button data-act='save' data-k='${key}' data-id='${id||''}'>Salva</button><button class='secondary' data-act='close'>Annulla</button>`;
+document.getElementById('modal').classList.remove('hidden');}
+function fieldHtml(f,item){if(f.r){const opts=DB[f.r].map(o=>`<option value='${o.id}' ${item[f.k]===o.id?'selected':''}>${esc(o.nome||o.codice||o.titolo)}</option>`).join('');
+return `<label>${f.l}</label><select data-f='${f.k}'><option value=''>--</option>${opts}</select>`;}
+const t=f.t==='number'?'number':'text';
+if(f.t==='textarea')return `<label>${f.l}</label><textarea data-f='${f.k}'>${esc(item[f.k]||'')}</textarea>`;
+return `<label>${f.l}</label><input data-f='${f.k}' type='${t}' value='${esc(item[f.k]||'')}'>`;}
+function saveEntity(key,id){const s=SCHEMA[key];let obj=id?DB[key].find(r=>r.id===id):{id:uid()};
+s.fields.forEach(f=>{const el=document.querySelector(`[data-f='${f.k}']`);if(el)obj[f.k]=f.t==='number'?(parseFloat(el.value)||0):el.value;});
+if(!id)DB[key].push(obj);save();closeModal();render();}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+function calcTaglio(){const vc=+document.getElementById('vc').value,d=+document.getElementById('d').value,ap=+document.getElementById('ap').value,ae=+document.getElementById('ae').value,fz=+document.getElementById('fz').value,z=+document.getElementById('z').value;
+const n=1000*vc/(Math.PI*d),vf=n*z*fz,q=ap*ae*vf/1000;
+document.getElementById('res-taglio').innerHTML=`n = ${n.toFixed(0)} giri/min<br>vf = ${vf.toFixed(0)} mm/min<br>Q = ${q.toFixed(1)} cm³/min`;}
+function calcMaschio(){const md=+document.getElementById('md').value,mp=+document.getElementById('mp').value;const hole=md-mp;
+document.getElementById('res-maschio').innerHTML=`Foro pre-maschiatura = ${hole.toFixed(2)} mm<br>Usa punta da ${hole.toFixed(1)} mm`;}
+function ask(){const q=document.getElementById('ask').value.toLowerCase();let ans='Nessun risultato. Prova con: fresatura, maschiatura, velocità, acciaio.';
+const hits=DB.knowledge.filter(k=>(k.titolo+' '+k.categoria+' '+k.contenuto).toLowerCase().includes(q));
+if(q&&hits.length)ans=hits.map(h=>`<b>${esc(h.titolo)}</b><br>${esc(h.contenuto)}`).join('<br><br>');
+document.getElementById('answer').innerHTML=ans;}
+function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bibbia-officina.json';a.click();}
+function render(){renderNav();const c=document.getElementById('content');
+if(current==='dashboard')c.innerHTML=dashboard();
+else if(current==='calcolatori')c.innerHTML=calcolatori();
+else if(current==='settings')c.innerHTML=settingsView();
+else c.innerHTML=entityView(current);}
+document.getElementById('nav').addEventListener('click',e=>{const t=e.target.closest('.nav-item');if(t){current=t.dataset.k;render();}});
+document.getElementById('search').addEventListener('input',e=>{query=e.target.value;render();});
+document.getElementById('content').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;
+const act=b.dataset.act,k=b.dataset.k,id=b.dataset.id;
+if(act==='add')openForm(k);
+else if(act==='edit')openForm(k,id);
+else if(act==='del'){if(confirm('Eliminare?')){DB[k]=DB[k].filter(r=>r.id!==id);save();render();}}
+else if(act==='save')saveEntity(k,id);
+else if(act==='close')closeModal();
+else if(act==='calc-taglio')calcTaglio();
+else if(act==='calc-maschio')calcMaschio();
+else if(act==='ask')ask();
+else if(act==='export')exportJSON();
+else if(act==='reset'){if(confirm('Reset?')){localStorage.removeItem(LS);DB=seed();save();render();}}});
+document.getElementById('content').addEventListener('change',e=>{if(e.target.id==='import'){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{DB=JSON.parse(r.result);save();render();}catch(err){alert('File non valido');}};r.readAsText(f);}});
+save();render();
+</script>
 </body>
 </html>
