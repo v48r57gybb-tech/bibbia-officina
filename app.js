@@ -1,0 +1,15 @@
+let editingId=null;
+const $=id=>document.getElementById(id);
+async function init(){await openDB();await render();if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}}
+function readForm(){return{id:editingId||crypto.randomUUID(),title:$('title').value.trim(),customer:$('customer').value.trim(),part:$('part').value.trim(),material:$('material').value.trim(),machine:$('machine').value.trim(),operation:$('operation').value,tool:$('tool').value.trim(),parameters:$('parameters').value.trim(),notes:$('notes').value.trim(),createdAt:editingId?undefined:Date.now(),updatedAt:Date.now()};}
+function fillForm(c){editingId=c.id;$('title').value=c.title||'';$('customer').value=c.customer||'';$('part').value=c.part||'';$('material').value=c.material||'';$('machine').value=c.machine||'';$('operation').value=c.operation||'Fresatura';$('tool').value=c.tool||'';$('parameters').value=c.parameters||'';$('notes').value=c.notes||'';}
+function clearForm(){editingId=null;['title','customer','part','material','machine','tool','parameters','notes'].forEach(i=>$(i).value='');}
+async function save(){const c=readForm();if(!c.title){$('status').textContent='Inserisci almeno il titolo.';return;}await putCase(c);clearForm();$('status').textContent='Caso salvato.';await render();}
+async function render(){const q=$('search').value.toLowerCase();const all=await getAllCases();const list=all.filter(c=>Object.values(c).some(v=>String(v||'').toLowerCase().includes(q))).sort((a,b)=>b.updatedAt-a.updatedAt);$('cases').innerHTML=list.length?list.map(c=>`<div class="case"><h3>${esc(c.title)}</h3><div><span class="tag">${esc(c.operation)}</span><span class="tag">${esc(c.machine||'Macchina non indicata')}</span></div><p class="small">${esc([c.customer,c.part,c.material,c.tool].filter(Boolean).join(' • ')||'Nessun dettaglio')}</p><p>${esc(c.parameters||'')}</p><p>${esc(c.notes||'')}</p><div class="actions"><button class="secondary" onclick='editCase("${c.id}")'>Modifica</button><button class="secondary" onclick='removeCase("${c.id}")'>Elimina</button></div></div>`).join(''):'<p class="small">Nessun caso trovato.</p>';}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+window.editCase=async id=>{const all=await getAllCases();const c=all.find(x=>x.id===id);if(c)fillForm(c);window.scrollTo({top:0,behavior:'smooth'});};
+window.removeCase=async id=>{if(confirm('Eliminare questo caso?')){await deleteCase(id);await render();}};
+$('saveBtn').onclick=save;$('clearBtn').onclick=clearForm;$('search').oninput=render;
+$('exportBtn').onclick=async()=>{const data=await getAllCases();const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bibbia-officina-backup.json';a.click();};
+$('importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const items=JSON.parse(await f.text());for(const c of items){if(c&&c.id)await putCase(c);}await render();$('status').textContent='Backup importato.';}catch{$('status').textContent='File non valido.';}};
+init();

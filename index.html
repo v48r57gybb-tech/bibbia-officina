@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bibbia dell’Officina</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f172a">
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}header{padding:18px;background:#111827;border-bottom:1px solid #334155;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:20px;margin:0}main{max-width:1100px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid #334155;border-radius:14px;padding:16px;margin-bottom:16px}input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #475569;background:#0b1220;color:var(--text);margin-bottom:10px}label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}button{background:var(--accent);border:0;color:#04283a;font-weight:700;padding:10px 14px;border-radius:10px;cursor:pointer}button.secondary{background:#334155;color:#e2e8f0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.case{border-left:4px solid var(--accent);padding:12px;border-radius:10px;background:#0b1220;margin-bottom:10px}.case h3{margin:0 0 6px}.small{font-size:12px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.tag{display:inline-block;background:#334155;color:#e2e8f0;padding:2px 8px;border-radius:999px;font-size:12px;margin-right:6px}#status{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+<h1>⚙️ Bibbia dell’Officina</h1>
+<div class="actions">
+<button class="secondary" id="exportBtn">Esporta backup</button>
+<label class="secondary" style="background:#334155;padding:10px 14px;border-radius:10px;cursor:pointer">Importa<input type="file" id="importInput" accept="application/json" hidden></label>
+</div>
+</header>
+<main>
+<div class="card">
+<h2>Nuovo caso di lavorazione</h2>
+<div class="grid">
+<div><label>Titolo</label><input id="title" placeholder="Es. Fresatura flangia"></div>
+<div><label>Cliente / codice interno</label><input id="customer"></div>
+<div><label>Codice pezzo</label><input id="part"></div>
+<div><label>Materiale</label><input id="material"></div>
+<div><label>Macchina</label><input id="machine"></div>
+<div><label>Operazione</label><select id="operation"><option>Fresatura</option><option>Tornitura</option><option>Foratura</option><option>Maschiatura</option><option>Tastatura</option><option>Altra</option></select></div>
+<div><label>Utensile</label><input id="tool"></div>
+<div><label>Parametri / note</label><input id="parameters" placeholder="Vc, n, Vf, ap, ae…"></div>
+</div>
+<label>Anomalie, soluzioni e risultati</label>
+<textarea id="notes" rows="4" placeholder="Problema incontrato, prove, soluzione adottata, risultato"></textarea>
+<div class="actions"><button id="saveBtn">Salva caso</button><button class="secondary" id="clearBtn">Pulisci</button></div>
+<p id="status"></p>
+</div>
+<div class="card">
+<h2>Casi salvati</h2>
+<input id="search" placeholder="Cerca per titolo, cliente, pezzo, materiale, macchina, utensile…">
+<div id="cases"></div>
+</div>
+</main>
+<script src="db.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
