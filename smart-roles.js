@@ -2,12 +2,12 @@
 'use strict';
 function user(){try{return JSON.parse(localStorage.getItem('bibbiaUtente')||'null');}catch(e){return null;}}
 function role(){const u=user();const r=String(u?.ruolo||'Ospite').toLowerCase();if(r.includes('amministr'))return 'admin';if(r.includes('operat'))return 'operatore';return 'ospite';}
-const OPERATOR_NAV=['dashboard','lavorazioni','clienti','controlli','problemi','promemoria','manutenzioni','macchine','utensili','materiali','magazzino','documenti','knowledge','lezioni','procedure','quiz','progressi','calcolatori'];
+const OPERATOR_NAV=['dashboard','lavorazioni','clienti','controlli','problemi','promemoria','manutenzioni','macchine','utensili','materiali','magazzino','documenti','knowledge','lezioni','procedure','quiz','progressi','calcolatori','reporti'];
 const GUEST_NAV=['dashboard','lavorazioni','clienti','manutenzioni','macchine','utensili','materiali','magazzino','documenti','knowledge','lezioni','procedure','quiz','progressi','calcolatori'];
-const OPERATOR_WRITE=['lavorazioni','clienti','controlli','problemi','promemoria','progressi','lezioni','procedure'];
-const EXEC=['complete-lesson','run-procedure','finish-procedure','take-quiz','submit-quiz','bluetooth','notify','ask','calc-taglio','calc-maschio','calc-trapano','mill-smart','tap-v2','drill-v2','sheet','pdf','close'];
+const OPERATOR_WRITE=['lavorazioni','clienti','controlli','problemi','promemoria','progressi','lezioni','procedure','reporti'];
+const EXEC=['complete-lesson','run-procedure','finish-procedure','take-quiz','submit-quiz','bluetooth','notify','ask','calc-taglio','calc-maschio','calc-trapano','mill-smart','tap-v2','drill-v2','sheet','pdf','close','start-activity','pause-activity','resume-activity','close-activity'];
 function canNav(k){const r=role();if(r==='admin')return true;if(r==='operatore')return OPERATOR_NAV.includes(k);return GUEST_NAV.includes(k);}
-function canWrite(k,act){const r=role();if(r==='admin')return true;if(r==='ospite')return false;if(act==='del')return false;if(EXEC.includes(act))return true;if(act==='duplicate')return k==='lavorazioni';return OPERATOR_WRITE.includes(k);}
+function canWrite(k,act){const r=role();if(r==='admin')return true;if(r==='ospite')return false;if(act==='del')return false;if(act==='archive-month')return false;if(EXEC.includes(act))return true;if(act==='duplicate')return k==='lavorazioni';return OPERATOR_WRITE.includes(k);}
 const oldNav=renderNav;
 renderNav=function(){oldNav();document.querySelectorAll('#nav [data-k]').forEach(e=>{if(!canNav(e.dataset.k))e.remove();});};
 const oldRender=render;
