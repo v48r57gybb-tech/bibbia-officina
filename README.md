@@ -13,3 +13,5 @@ Su telefono: apri il link, poi dal menu del browser scegli **Aggiungi a schermat
 ## Pubblicazione
 
 Il workflow `.github/workflows/pages.yml` pubblica automaticamente il contenuto del branch `main` su GitHub Pages.
+
+Pubblicazione riavviata dopo aver reso il repository pubblico.
