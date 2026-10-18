@@ -48,7 +48,7 @@ macchine:[{id:uid(),nome:'Fresatrice CNC 1',tipo:'Fresatrice',marca:'Haas',model
 utensili:[{id:uid(),codice:'FRA-001',tipo:'Fresa',diametro:10,materiale:'Carburo',vitaUtile:120}],
 materiali:[{id:uid(),nome:'Acciaio C45',tipo:'Acciaio',durezza:'HB 200'}],
 lavorazioni:[],parametri:[],fornitori:[],clienti:[],ordini:[],manutenzioni:[],documenti:[],
-knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'},{id:uid(),titolo:'Maschiatura metrica',categoria:'Maschiatura',contenuto:'Per maschi metrici, il foro pre-maschiatura è circa D meno il passo P.'},{id:uid(),titolo:'Perforazione acciaio',categoria:'Trapano',contenuto:'Per acciaio con punta HSS, Vc consigliata 20-30 m/min.'}]};}
+knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'},{id:uid(),titolo:'Maschiatura metrica',categoria:'Maschiatura',contenuto:'Per maschi metrici, il foro pre-maschiatura è circa D meno il passo P.'},{id:uid(),titolo:'Perforazione acciaio',categoria:'Trapano',contenuto:'Per acciaio con punta HSS, Vc consigliata 25-40 m/min.'}]};}
 let DB=JSON.parse(localStorage.getItem(LS)||'null')||seed();
 function save(){localStorage.setItem(LS,JSON.stringify(DB));}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/'/g,'&#39;');}
@@ -150,5 +150,21 @@ else if(act==='reset'){if(confirm('Reset?')){localStorage.removeItem(LS);DB=seed
 document.getElementById('content').addEventListener('change',e=>{if(e.target.id==='import'){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{DB=JSON.parse(r.result);save();render();}catch(err){alert('File non valido');}};r.readAsText(f);}});
 save();render();
 </script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/workshop-update.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/production-calcs.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-ui.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-features.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-training.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-pro.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-extra.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-final.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-roles.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-login.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-login-fix.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-demo.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-time.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-search.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-nav.js'></script>
+<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-ui-polish.js'></script>
 </body>
 </html>
