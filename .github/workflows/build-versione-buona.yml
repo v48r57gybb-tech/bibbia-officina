@@ -1,0 +1,95 @@
+name: Costruisci versione buona aggiornata
+on:
+  push:
+    branches: [lavoro-report-fasi-libere]
+    paths: [.github/workflows/build-versione-buona.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_SHA: c76256eac0d47922a8e828d3705df4b4b3fd0286
+      PATCH_SHA: cdfdd88aac246de4061a09ab334b1294644e3062
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Estrai originale e copia aggiornata
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="$RUNNER_TEMP/bibbia-originale"
+          APP="$RUNNER_TEMP/bibbia-aggiornata"
+          mkdir -p "$BASE" "$APP"
+          git cat-file -e "$BASE_SHA^{commit}"
+          git cat-file -e "$PATCH_SHA^{commit}"
+          git archive "$BASE_SHA" | tar -x -C "$BASE"
+          cp -a "$BASE/." "$APP/"
+          git show "$PATCH_SHA:smart-time.js" > "$APP/smart-time.js"
+          test "$(git hash-object "$APP/smart-time.js")" = d945cf39da8395226aead67aa1f46e0dc8f43775
+          python3 - "$BASE" "$APP" <<'PY'
+          import pathlib, sys
+          a, b = map(pathlib.Path, sys.argv[1:])
+          names = {p.relative_to(a) for p in a.rglob('*') if p.is_file()}
+          other = {p.relative_to(b) for p in b.rglob('*') if p.is_file()}
+          assert names == other, 'Elenco file non allineato'
+          changed = [str(p) for p in names if (a/p).read_bytes() != (b/p).read_bytes()]
+          assert changed == ['smart-time.js'], changed
+          print('Allineamento verificato: unico file differente smart-time.js')
+          PY
+      - name: Controlli sintattici e costruzione dei due pacchetti
+        shell: bash
+        run: |
+          set -euo pipefail
+          for DIR in "$RUNNER_TEMP/bibbia-originale" "$RUNNER_TEMP/bibbia-aggiornata"; do
+            (
+              cd "$DIR"
+              for FILE in *.js *.mjs; do
+                node --check "$FILE"
+              done
+              node build-icons.mjs
+              node apply-update.mjs
+              test -s dist/index.html
+              test -s dist/apple-touch-icon.png
+              python3 - <<'PY'
+          import pathlib, re, subprocess, tempfile
+          html = pathlib.Path('dist/index.html').read_text()
+          scripts = re.findall(r'<script\b[^>]*>(.*?)</script\s*>', html, flags=re.S | re.I)
+          assert scripts, 'Nessuno script trovato nella app costruita'
+          with tempfile.TemporaryDirectory() as d:
+              for i, code in enumerate(scripts):
+                  p = pathlib.Path(d) / (str(i) + '.js')
+                  p.write_text(code)
+                  subprocess.run(['node', '--check', str(p)], check=True)
+          print('Build e sintassi degli script incorporati verificate; test browser non eseguiti')
+          PY
+            )
+          done
+      - name: Identifica pacchetti e limiti della verifica
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'Versione originale: %s\nNessun dato utente incluso.\n' "$BASE_SHA" > "$RUNNER_TEMP/bibbia-originale/VERSIONE.txt"
+          printf 'Base originale: %s\nModulo tempi: %s\nUnico file sorgente applicativo modificato: smart-time.js\nControlli: allineamento file, sintassi e build.\nTest browser e pubblicazione Vercel NON eseguiti.\nI dati del browser non sono inclusi: esportare JSON prima di aggiornare.\n' "$BASE_SHA" "$PATCH_SHA" > "$RUNNER_TEMP/bibbia-aggiornata/VERSIONE.txt"
+      - name: Conserva originale per ripristino
+        uses: actions/upload-artifact@v4
+        with:
+          name: bibbia-originale-c76256e-sorgenti-e-app
+          path: ${{ runner.temp }}/bibbia-originale/
+          include-hidden-files: true
+          retention-days: 90
+          if-no-files-found: error
+      - name: Conserva applicazione aggiornata
+        uses: actions/upload-artifact@v4
+        with:
+          name: bibbia-c76256e-report-fasi-libere-sorgenti-e-app
+          path: ${{ runner.temp }}/bibbia-aggiornata/
+          include-hidden-files: true
+          retention-days: 90
+          if-no-files-found: error
