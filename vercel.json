@@ -1,1 +1,1 @@
-{"buildCommand":"node build-icons.mjs && node apply-update.mjs","outputDirectory":"dist","framework":null}
+{"buildCommand":"node build-icons.mjs && node apply-update.mjs && node build-enhancements.mjs","outputDirectory":"dist","framework":null}
