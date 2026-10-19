@@ -1,1 +1,1 @@
-{"buildCommand":"node build-icons.mjs && node build-persistence.mjs && node apply-update.mjs && node build-enhancements.mjs && node build-cloud-test.mjs","outputDirectory":"dist","framework":null}
+{"buildCommand":"node build-icons.mjs && node build-persistence.mjs && node apply-update.mjs && node build-enhancements.mjs && node build-cloud-test.mjs && node build-save-flow.mjs","outputDirectory":"dist","framework":null}
