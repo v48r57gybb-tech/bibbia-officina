@@ -3,39 +3,45 @@
 const ROLE_KEY='cloudRole';
 const SUPABASE_URL='https://nfrjhatqquefzjwykdqf.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcmpoYXRxcXVlZnpqd3lrZHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzE3NDMsImV4cCI6MjEwNzk0Nzc0M30.7ypkTFbc87hctaoZZ3ZdacCr8p1a2SrFMMEbvnYkKRQ';
-const IDLE_MINUTES=10, WARN_SECONDS=30;
+const IDLE_MINUTES=10,WARN_SECONDS=30;
+function cleanupCloudAccounts(){
+ let changed=false;
+ (DB.utenti||[]).forEach(u=>{if(u.note==='Account cloud'||u.nome==='Cloud Amministratore'||u.nome==='Cloud Operatore'){u._delete=true;changed=true;}});
+ if(changed){DB.utenti=(DB.utenti||[]).filter(u=>!u._delete);save();}
+}
 function enter(role,user){
  sessionStorage.setItem(ROLE_KEY,role);
  sessionStorage.setItem('bibbiaSessione',JSON.stringify({userId:user.id,at:Date.now()}));
  localStorage.setItem('bibbiaUtente',JSON.stringify(user));
  document.body.classList.remove('locked');
  const ov=document.getElementById('cloud-login');if(ov)ov.remove();
- addLogout();startIdleTimer();applyRoleLimits(role);
+ addExitButtons(role);startIdleTimer();applyRoleLimits(role);
  try{render();}catch(e){}
 }
-function ensureUser(role){
- const users=DB.utenti||[];
- const name=role==='admin'?'Cloud Amministratore':'Cloud Operatore';
- const ruolo=role==='admin'?'Amministratore':'Operatore';
- let u=users.find(x=>x.nome===name&&x.ruolo===ruolo);
- if(!u){u={id:uid(),nome:name,ruolo:ruolo,pin:'',email:'',note:'Account cloud'};users.push(u);DB.utenti=users;save();}
- return u;
-}
-function addLogout(){
- if(document.getElementById('cloud-logout'))return;
+function addExitButtons(role){
+ document.querySelectorAll('.cloud-exit').forEach(b=>b.remove());
+ const wrap=document.createElement('div');
+ wrap.style.cssText='position:fixed;left:12px;bottom:12px;z-index:9999;display:flex;gap:8px';
+ if(role==='operator'){
+ const c=document.createElement('button');
+ c.className='cloud-exit';c.textContent='Cambia operatore';
+ c.style.cssText='background:#38bdf8;color:#0f172a;border:none;padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35)';
+ c.onclick=()=>{sessionStorage.removeItem(ROLE_KEY);sessionStorage.removeItem('bibbiaSessione');localStorage.removeItem('bibbiaUtente');location.reload();};
+ wrap.appendChild(c);
+ }
  const b=document.createElement('button');
- b.id='cloud-logout';b.textContent='Esci';
- b.style.cssText='position:fixed;top:12px;right:12px;z-index:9999;background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35)';
+ b.className='cloud-exit';b.textContent='Esci';
+ b.style.cssText='background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35)';
  b.onclick=logout;
- document.body.appendChild(b);
+ wrap.appendChild(b);
+ document.body.appendChild(wrap);
  hideOtherLogoutButtons();
  const obs=new MutationObserver(hideOtherLogoutButtons);
  obs.observe(document.body,{childList:true,subtree:true});
 }
 function hideOtherLogoutButtons(){
- const mine=document.getElementById('cloud-logout');
  document.querySelectorAll('button').forEach(b=>{
- if(b!==mine&&b.textContent.trim().toLowerCase()==='esci')b.style.display='none';
+ if(!b.classList.contains('cloud-exit')&&b.textContent.trim().toLowerCase()==='esci')b.style.display='none';
  });
 }
 function logout(){
@@ -73,6 +79,7 @@ function applyRoleLimits(role){
 }
 function showLogin(){
  if(document.getElementById('cloud-login'))return;
+ cleanupCloudAccounts();
  const ov=document.createElement('div');
  ov.id='cloud-login';
  ov.style.cssText='position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:10000';
@@ -89,8 +96,7 @@ function showLogin(){
  <button id="admin-go" style="width:100%;margin-top:8px">Accedi</button>
  </div>
  <div id="form-op" style="display:none">
- <label>Nome operatore</label><input id="op-name" list="op-list">
- <datalist id="op-list"></datalist>
+ <label>Operatore</label><select id="op-name"></select>
  <label>PIN</label><input id="op-pin" type="password" inputmode="numeric">
  <button id="op-go" style="width:100%;margin-top:8px">Accedi</button>
  </div>
@@ -108,13 +114,13 @@ function showLogin(){
  }
  ov.querySelector('#tab-admin').onclick=()=>setTab('admin');
  ov.querySelector('#tab-op').onclick=()=>setTab('op');
- const dl=ov.querySelector('#op-list');
- (DB.utenti||[]).filter(u=>u.ruolo==='Operatore').forEach(u=>{const o=document.createElement('option');o.value=u.nome;dl.appendChild(o);});
+ const sel=ov.querySelector('#op-name');
+ const ops=(DB.utenti||[]).filter(u=>u.ruolo==='Operatore');
+ sel.innerHTML=ops.length?ops.map(u=>'<option value="'+u.id+'">'+u.nome+'</option>').join(''):'<option value="">Nessun operatore creato</option>';
  ov.querySelector('#op-go').onclick=()=>{
- const nome=ov.querySelector('#op-name').value.trim();
+ const u=(DB.utenti||[]).find(x=>x.id===sel.value);
+ if(!u){msg.textContent='Seleziona un operatore.';return;}
  const pin=ov.querySelector('#op-pin').value.trim();
- const u=(DB.utenti||[]).find(x=>x.ruolo==='Operatore'&&x.nome===nome);
- if(!u){msg.textContent='Operatore non trovato.';return;}
  if(String(u.pin||'')!==pin){msg.textContent='PIN non corretto.';return;}
  enter('operator',u);
  };
@@ -131,7 +137,10 @@ function showLogin(){
  });
  const j=await r.json().catch(()=>({}));
  if(!r.ok||!j.access_token){msg.textContent='Email o password non validi.';return;}
- enter('admin',ensureUser('admin'));
+ const users=DB.utenti||[];
+ let admin=users.find(x=>x.ruolo==='Amministratore'&&x.note!=='Account cloud');
+ if(!admin){admin={id:uid(),nome:'Amministratore',ruolo:'Amministratore',pin:'',email:email,note:''};users.push(admin);DB.utenti=users;save();}
+ enter('admin',admin);
  }catch(e){msg.textContent='Servizio di accesso non disponibile.';}
  };
  [ov.querySelector('#admin-pass'),ov.querySelector('#op-pin')].forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')el.parentElement.querySelector('button').click();}));
@@ -143,22 +152,24 @@ function setupAutosave(){
  modal.addEventListener('input',e=>{
  const f=e.target.closest('[data-f]');if(!f)return;
  const body=document.getElementById('modal-body');
- const title=body.querySelector('h3')?.textContent||'';
- const key=title.includes('Modifica')?'mod':'new';
  const draft={};body.querySelectorAll('[data-f]').forEach(el=>{draft[el.dataset.f]=el.value;});
- localStorage.setItem('bibbiaDraft',JSON.stringify({key,draft,at:Date.now()}));
+ localStorage.setItem('bibbiaDraft',JSON.stringify({draft,at:Date.now()}));
  });
 }
 const role=sessionStorage.getItem(ROLE_KEY);
 if(role==='admin'||role==='operator'){
- const u=ensureUser(role);
+ cleanupCloudAccounts();
+ const users=DB.utenti||[];
+ const u=users.find(x=>x.ruolo===(role==='admin'?'Amministratore':'Operatore')&&x.note!=='Account cloud')||users[0];
+ if(u){
  sessionStorage.setItem('bibbiaSessione',JSON.stringify({userId:u.id,at:Date.now()}));
  localStorage.setItem('bibbiaUtente',JSON.stringify(u));
  document.body.classList.remove('locked');
  const overlay=document.getElementById('login');if(overlay)overlay.remove();
  const internalLogout=document.getElementById('logout');if(internalLogout)internalLogout.hidden=true;
- addLogout();startIdleTimer();applyRoleLimits(role);
+ addExitButtons(role);startIdleTimer();applyRoleLimits(role);
  try{render();}catch(e){}
+ }else{sessionStorage.removeItem(ROLE_KEY);document.body.classList.add('locked');showLogin();}
 }else{
  document.body.classList.add('locked');
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);else showLogin();
