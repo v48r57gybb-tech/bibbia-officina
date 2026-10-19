@@ -1,7 +1,8 @@
 (()=>{
 'use strict';
 const ROLE_KEY='cloudRole';
-function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+const SUPABASE_URL='https://nfrjhatqquefzjwykdqf.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcmpoYXRxcXVlZnpqd3lrZHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzE3NDMsImV4cCI6MjEwNzk0Nzc0M30.7ypkTFbc87hctaoZZ3ZdacCr8p1a2SrFMMEbvnYkKRQ';
 function enter(role,user){
  sessionStorage.setItem(ROLE_KEY,role);
  sessionStorage.setItem('bibbiaSessione',JSON.stringify({userId:user.id,at:Date.now()}));
@@ -80,9 +81,13 @@ function showLogin(){
  if(!email||!password){msg.textContent='Inserisci email e password.';return;}
  msg.textContent='Verifica in corso...';
  try{
- const r=await fetch('/api/auth-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+ const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+ method:'POST',
+ headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},
+ body:JSON.stringify({email,password})
+ });
  const j=await r.json().catch(()=>({}));
- if(!r.ok||!j.ok){msg.textContent=j.error||'Accesso non riuscito.';return;}
+ if(!r.ok||!j.access_token){msg.textContent='Email o password non validi.';return;}
  enter('admin',ensureUser('admin'));
  }catch(e){msg.textContent='Servizio di accesso non disponibile.';}
  };
