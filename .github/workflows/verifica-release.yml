@@ -1,0 +1,42 @@
+name: Verifica release senza pubblicazione
+on:
+  push:
+    branches: [release/c76256e-base-pulita]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintassi e build reale
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in *.js *.mjs; do node --check "$f"; done
+          node build-icons.mjs
+          node apply-update.mjs
+          test -s dist/index.html
+          python3 - <<'PY'
+          import pathlib, re, subprocess, tempfile
+          html = pathlib.Path('dist/index.html').read_text()
+          scripts = re.findall(r'<script\b[^>]*>(.*?)</script\s*>', html, re.S | re.I)
+          assert scripts, 'Nessuno script nella build'
+          with tempfile.TemporaryDirectory() as d:
+              for i, code in enumerate(scripts):
+                  p = pathlib.Path(d) / (str(i) + '.js')
+                  p.write_text(code)
+                  subprocess.run(['node', '--check', str(p)], check=True)
+          PY
+          git rev-parse HEAD > dist/BUILD-COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-build-verificata
+          path: dist/
+          retention-days: 90
+          if-no-files-found: error

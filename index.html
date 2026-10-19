@@ -43,67 +43,112 @@ label{display:block;font-size:12px;color:#94a3b8;margin-bottom:4px}
 <script>
 const LS='bibbiaOfficinaDB';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-function seed(){return{macchine:[{id:uid(),nome:'Fresatrice CNC 1',tipo:'Fresatrice',marca:'Haas',modello:'VF-2',anno:2021,stato:'Operativa'}],utensili:[{id:uid(),codice:'FRA-001',tipo:'Fresa',diametro:10,materiale:'Carburo',vitaUtile:120}],materiali:[{id:uid(),nome:'Acciaio C45',tipo:'Acciaio',durezza:'HB 200'}],lavorazioni:[],parametri:[],fornitori:[],clienti:[],ordini:[],manutenzioni:[],documenti:[],knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'}]};}
+function seed(){return{
+macchine:[{id:uid(),nome:'Fresatrice CNC 1',tipo:'Fresatrice',marca:'Haas',modello:'VF-2',anno:2021,stato:'Operativa'}],
+utensili:[{id:uid(),codice:'FRA-001',tipo:'Fresa',diametro:10,materiale:'Carburo',vitaUtile:120}],
+materiali:[{id:uid(),nome:'Acciaio C45',tipo:'Acciaio',durezza:'HB 200'}],
+lavorazioni:[],parametri:[],fornitori:[],clienti:[],ordini:[],manutenzioni:[],documenti:[],
+knowledge:[{id:uid(),titolo:'Velocità di taglio acciaio C45',categoria:'Fresatura',contenuto:'Per acciaio C45 con fresa in carburo, Vc consigliata 120-180 m/min.'},{id:uid(),titolo:'Maschiatura metrica',categoria:'Maschiatura',contenuto:'Per maschi metrici, il foro pre-maschiatura è circa D meno il passo P.'},{id:uid(),titolo:'Perforazione acciaio',categoria:'Trapano',contenuto:'Per acciaio con punta HSS, Vc consigliata 20-30 m/min.'}]};}
 let DB=JSON.parse(localStorage.getItem(LS)||'null')||seed();
 function save(){localStorage.setItem(LS,JSON.stringify(DB));}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/'/g,'&#39;');}
-const SCHEMA={macchine:{label:'Macchine',icon:'⚙️',fields:[{k:'nome',l:'Nome'},{k:'tipo',l:'Tipo'},{k:'marca',l:'Marca'},{k:'modello',l:'Modello'},{k:'anno',l:'Anno',t:'number'},{k:'stato',l:'Stato'}]},utensili:{label:'Utensili',icon:'🔧',fields:[{k:'codice',l:'Codice'},{k:'tipo',l:'Tipo'},{k:'diametro',l:'Diametro (mm)',t:'number'},{k:'materiale',l:'Materiale'},{k:'vitaUtile',l:'Vita utile (min)',t:'number'}]},materiali:{label:'Materiali',icon:'🧱',fields:[{k:'nome',l:'Nome'},{k:'tipo',l:'Tipo'},{k:'durezza',l:'Durezza'}]},lavorazioni:{label:'Lavorazioni',icon:'🛠️',fields:[{k:'nome',l:'Nome'},{k:'macchina',l:'Macchina',r:'macchine'},{k:'utensile',l:'Utensile',r:'utensili'},{k:'materiale',l:'Materiale',r:'materiali'},{k:'tempo',l:'Tempo (min)',t:'number'}]},parametri:{label:'Parametri',icon:'📐',fields:[{k:'lavorazione',l:'Lavorazione',r:'lavorazioni'},{k:'vc',l:'Vc (m/min)',t:'number'},{k:'fz',l:'Fz (mm/dente)',t:'number'},{k:'ap',l:'Ap (mm)',t:'number'},{k:'ae',l:'Ae (mm)',t:'number'},{k:'nota',l:'Nota'}]},fornitori:{label:'Fornitori',icon:'🚚',fields:[{k:'nome',l:'Nome'},{k:'contatto',l:'Contatto'},{k:'email',l:'Email'},{k:'telefono',l:'Telefono'}]},clienti:{label:'Clienti',icon:'🏢',fields:[{k:'nome',l:'Nome'},{k:'contatto',l:'Contatto'},{k:'email',l:'Email'},{k:'telefono',l:'Telefono'}]},ordini:{label:'Ordini',icon:'📦',fields:[{k:'codice',l:'Codice'},{k:'cliente',l:'Cliente',r:'clienti'},{k:'consegna',l:'Consegna'},{k:'stato',l:'Stato'},{k:'note',l:'Note'}]},manutenzioni:{label:'Manutenzioni',icon:'🧰',fields:[{k:'macchina',l:'Macchina',r:'macchine'},{k:'data',l:'Data'},{k:'tipo',l:'Tipo'},{k:'descrizione',l:'Descrizione'},{k:'prossimo',l:'Prossimo intervento'}]},documenti:{label:'Documenti',icon:'📄',fields:[{k:'titolo',l:'Titolo'},{k:'tipo',l:'Tipo'},{k:'link',l:'Link'},{k:'note',l:'Note'}]},knowledge:{label:'Conoscenza',icon:'📚',fields:[{k:'titolo',l:'Titolo'},{k:'categoria',l:'Categoria'},{k:'contenuto',l:'Contenuto',t:'textarea'}]}};
-const SECTIONS=[{k:'dashboard',l:'Dashboard',i:'📊'},{k:'reporti',l:'Report tempi',i:'📄'},...Object.keys(SCHEMA).map(k=>({k,l:SCHEMA[k].label,i:SCHEMA[k].icon})),{k:'calcolatori',l:'Calcolatori',i:'🧮'},{k:'settings',l:'Impostazioni',i:'⚙️'}];
+const SCHEMA={
+macchine:{label:'Macchine',icon:'⚙️',fields:[{k:'nome',l:'Nome'},{k:'tipo',l:'Tipo'},{k:'marca',l:'Marca'},{k:'modello',l:'Modello'},{k:'anno',l:'Anno',t:'number'},{k:'stato',l:'Stato'}]},
+utensili:{label:'Utensili',icon:'🔧',fields:[{k:'codice',l:'Codice'},{k:'tipo',l:'Tipo'},{k:'diametro',l:'Diametro (mm)',t:'number'},{k:'materiale',l:'Materiale'},{k:'vitaUtile',l:'Vita utile (min)',t:'number'}]},
+materiali:{label:'Materiali',icon:'🧱',fields:[{k:'nome',l:'Nome'},{k:'tipo',l:'Tipo'},{k:'durezza',l:'Durezza'}]},
+lavorazioni:{label:'Lavorazioni',icon:'🛠️',fields:[{k:'nome',l:'Nome'},{k:'macchina',l:'Macchina',r:'macchine'},{k:'utensile',l:'Utensile',r:'utensili'},{k:'materiale',l:'Materiale',r:'materiali'},{k:'tempo',l:'Tempo (min)',t:'number'}]},
+parametri:{label:'Parametri',icon:'📐',fields:[{k:'lavorazione',l:'Lavorazione',r:'lavorazioni'},{k:'vc',l:'Vc (m/min)',t:'number'},{k:'fz',l:'Fz (mm/dente)',t:'number'},{k:'ap',l:'Ap (mm)',t:'number'},{k:'ae',l:'Ae (mm)',t:'number'},{k:'nota',l:'Nota'}]},
+fornitori:{label:'Fornitori',icon:'🚚',fields:[{k:'nome',l:'Nome'},{k:'contatto',l:'Contatto'},{k:'email',l:'Email'},{k:'telefono',l:'Telefono'}]},
+clienti:{label:'Clienti',icon:'🏢',fields:[{k:'nome',l:'Nome'},{k:'contatto',l:'Contatto'},{k:'email',l:'Email'},{k:'telefono',l:'Telefono'}]},
+ordini:{label:'Ordini',icon:'📦',fields:[{k:'codice',l:'Codice'},{k:'cliente',l:'Cliente',r:'clienti'},{k:'consegna',l:'Consegna'},{k:'stato',l:'Stato'},{k:'note',l:'Note'}]},
+manutenzioni:{label:'Manutenzioni',icon:'🧰',fields:[{k:'macchina',l:'Macchina',r:'macchine'},{k:'data',l:'Data'},{k:'tipo',l:'Tipo'},{k:'descrizione',l:'Descrizione'},{k:'prossimo',l:'Prossimo intervento'}]},
+documenti:{label:'Documenti',icon:'📄',fields:[{k:'titolo',l:'Titolo'},{k:'tipo',l:'Tipo'},{k:'link',l:'Link'},{k:'note',l:'Note'}]},
+knowledge:{label:'Conoscenza',icon:'📚',fields:[{k:'titolo',l:'Titolo'},{k:'categoria',l:'Categoria'},{k:'contenuto',l:'Contenuto',t:'textarea'}]}};
+const SECTIONS=[{k:'dashboard',l:'Dashboard',i:'📊'},...Object.keys(SCHEMA).map(k=>({k,l:SCHEMA[k].label,i:SCHEMA[k].icon})),{k:'calcolatori',l:'Calcolatori',i:'🧮'},{k:'settings',l:'Impostazioni',i:'⚙️'}];
 let current='dashboard',query='';
 function nameOf(coll,id){const o=DB[coll].find(r=>r.id===id);return o?(o.nome||o.codice||o.titolo||''):'-';}
 function renderNav(){document.getElementById('nav').innerHTML=SECTIONS.map(s=>`<div class='nav-item ${s.k===current?'active':''}' data-k='${s.k}'>${s.i} ${s.l}</div>`).join('');}
-function entityView(key){const s=SCHEMA[key];const q=query.toLowerCase();const rows=DB[key].filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q)));return `<div class='card'><h2>${s.icon} ${s.label}</h2><button data-act='add' data-k='${key}'>+ Aggiungi</button><table><tr>${s.fields.map(f=>`<th>${f.l}</th>`).join('')}<th>Azioni</th></tr>${rows.map(r=>`<tr>${s.fields.map(f=>`<td>${esc(f.r?nameOf(f.r,r[f.k]):r[f.k]||'')}</td>`).join('')}<td><button data-act='edit' data-k='${key}' data-id='${r.id}'>✏️</button><button data-act='del' data-k='${key}' data-id='${r.id}'>🗑️</button></td></tr>`).join('')}</table></div>`;}
-function dashboard(){const counts=Object.keys(SCHEMA).map(k=>`<span class='stat'>${SCHEMA[k].icon} ${SCHEMA[k].label}: <b>${DB[k].length}</b></span>`).join('');return `<div class='card'><h2>📊 Dashboard</h2><div>${counts}</div></div><div class='card'><h2>🤖 Assistente rapido</h2><input id='ask' placeholder='Chiedi qualcosa...'><button data-act='ask'>Chiedi</button><div class='result' id='answer'>Scrivi una domanda sulla lavorazione o cerca nella conoscenza.</div></div>`;}
-function calcolatori(){return `<div class='card'><h2>🧮 Calcolatrice fresatura</h2><label>Vc (m/min)</label><input id='vc' type='number' value='150'><label>Diametro D (mm)</label><input id='d' type='number' value='10'><label>Ap (mm)</label><input id='ap' type='number' value='2'><label>Ae (mm)</label><input id='ae' type='number' value='5'><label>Fz (mm/dente)</label><input id='fz' type='number' value='0.05'><label>N° denti z</label><input id='z' type='number' value='4'><button data-act='calc-taglio'>Calcola</button><div class='result' id='res-taglio'>-</div></div><div class='card'><h2>🧵 Calcolatrice maschiatura</h2><label>Diametro nominale M (mm)</label><input id='md' type='number' value='6'><label>Passo P (mm)</label><input id='mp' type='number' value='1'><button data-act='calc-maschio'>Calcola</button><div class='result' id='res-maschio'>-</div></div><div class='card'><h2>🔩 Calcolatrice perforazione</h2><label>Diametro punta D (mm)</label><input id='pd' type='number' value='8'><label>Vc (m/min)</label><input id='pvc' type='number' value='25'><button data-act='calc-trapano'>Calcola</button><div class='result' id='res-trapano'>-</div></div>`;}
-function settingsView(){return `<div class='card'><h2>⚙️ Impostazioni</h2><button data-act='export'>⬇️ Esporta JSON</button><label>Importa JSON</label><input type='file' id='import' accept='.json'><button class='secondary' data-act='reset'>♻️ Reset dati</button></div>`;}
-function openForm(key,id){const s=SCHEMA[key];const item=id?DB[key].find(r=>r.id===id):{};document.getElementById('modal-body').innerHTML=`<h3>${id?'Modifica':'Nuovo'} ${s.label}</h3>${s.fields.map(f=>fieldHtml(f,item)).join('')}<button data-act='save' data-k='${key}' data-id='${id||''}'>Salva</button><button class='secondary' data-act='close'>Annulla</button>`;document.getElementById('modal').classList.remove('hidden');}
-function fieldHtml(f,item){if(f.r){const opts=DB[f.r].map(o=>`<option value='${o.id}' ${item[f.k]===o.id?'selected':''}>${esc(o.nome||o.codice||o.titolo)}</option>`).join('');return `<label>${f.l}</label><select data-f='${f.k}'><option value=''>--</option>${opts}</select>`;}const t=f.t==='number'?'number':'text';if(f.t==='textarea')return `<label>${f.l}</label><textarea data-f='${f.k}'>${esc(item[f.k]||'')}</textarea>`;return `<label>${f.l}</label><input data-f='${f.k}' type='${t}' value='${esc(item[f.k]||'')}'>`;}
-function saveEntity(key,id){const s=SCHEMA[key];let obj=id?DB[key].find(r=>r.id===id):{id:uid()};s.fields.forEach(f=>{const el=document.querySelector(`[data-f='${f.k}']`);if(el)obj[f.k]=f.t==='number'?(parseFloat(el.value)||0):el.value;});if(!id)DB[key].push(obj);save();closeModal();render();}
+function entityView(key){const s=SCHEMA[key];const q=query.toLowerCase();
+const rows=DB[key].filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q)));
+return `<div class='card'><h2>${s.icon} ${s.label}</h2><button data-act='add' data-k='${key}'>+ Aggiungi</button>
+<table><tr>${s.fields.map(f=>`<th>${f.l}</th>`).join('')}<th>Azioni</th></tr>
+${rows.map(r=>`<tr>${s.fields.map(f=>`<td>${esc(f.r?nameOf(f.r,r[f.k]):r[f.k]||'')}</td>`).join('')}
+<td><button data-act='edit' data-k='${key}' data-id='${r.id}'>✏️</button><button data-act='del' data-k='${key}' data-id='${r.id}'>🗑️</button></td></tr>`).join('')}
+</table></div>`;}
+function dashboard(){const counts=Object.keys(SCHEMA).map(k=>`<span class='stat'>${SCHEMA[k].icon} ${SCHEMA[k].label}: <b>${DB[k].length}</b></span>`).join('');
+return `<div class='card'><h2>📊 Dashboard</h2><div>${counts}</div></div>
+<div class='card'><h2>🤖 Assistente rapido</h2><input id='ask' placeholder='Chiedi qualcosa...'><button data-act='ask'>Chiedi</button><div class='result' id='answer'>Scrivi una domanda sulla lavorazione o cerca nella conoscenza.</div></div>`;}
+function calcolatori(){return `
+<div class='card'><h2>🧮 Calcolatrice fresatura</h2>
+<label>Vc (m/min)</label><input id='vc' type='number' value='150'>
+<label>Diametro D (mm)</label><input id='d' type='number' value='10'>
+<label>Ap (mm)</label><input id='ap' type='number' value='2'>
+<label>Ae (mm)</label><input id='ae' type='number' value='5'>
+<label>Fz (mm/dente)</label><input id='fz' type='number' value='0.05'>
+<label>N° denti z</label><input id='z' type='number' value='4'>
+<button data-act='calc-taglio'>Calcola</button><div class='result' id='res-taglio'>-</div></div>
+<div class='card'><h2>🧵 Calcolatrice maschiatura</h2>
+<label>Diametro nominale M (mm)</label><input id='md' type='number' value='6'>
+<label>Passo P (mm)</label><input id='mp' type='number' value='1'>
+<button data-act='calc-maschio'>Calcola</button><div class='result' id='res-maschio'>-</div></div>
+<div class='card'><h2>🔩 Calcolatrice perforazione</h2>
+<label>Diametro punta D (mm)</label><input id='pd' type='number' value='8'>
+<label>Vc (m/min)</label><input id='pvc' type='number' value='25'>
+<button data-act='calc-trapano'>Calcola</button><div class='result' id='res-trapano'>-</div></div>`;}
+function settingsView(){return `<div class='card'><h2>⚙️ Impostazioni</h2>
+<button data-act='export'>⬇️ Esporta JSON</button>
+<label>Importa JSON</label><input type='file' id='import' accept='.json'>
+<button class='secondary' data-act='reset'>♻️ Reset dati</button></div>`;}
+function openForm(key,id){const s=SCHEMA[key];const item=id?DB[key].find(r=>r.id===id):{};
+document.getElementById('modal-body').innerHTML=`<h3>${id?'Modifica':'Nuovo'} ${s.label}</h3>
+${s.fields.map(f=>fieldHtml(f,item)).join('')}
+<button data-act='save' data-k='${key}' data-id='${id||''}'>Salva</button><button class='secondary' data-act='close'>Annulla</button>`;
+document.getElementById('modal').classList.remove('hidden');}
+function fieldHtml(f,item){if(f.r){const opts=DB[f.r].map(o=>`<option value='${o.id}' ${item[f.k]===o.id?'selected':''}>${esc(o.nome||o.codice||o.titolo)}</option>`).join('');
+return `<label>${f.l}</label><select data-f='${f.k}'><option value=''>--</option>${opts}</select>`;}
+const t=f.t==='number'?'number':'text';
+if(f.t==='textarea')return `<label>${f.l}</label><textarea data-f='${f.k}'>${esc(item[f.k]||'')}</textarea>`;
+return `<label>${f.l}</label><input data-f='${f.k}' type='${t}' value='${esc(item[f.k]||'')}'>`;}
+function saveEntity(key,id){const s=SCHEMA[key];let obj=id?DB[key].find(r=>r.id===id):{id:uid()};
+s.fields.forEach(f=>{const el=document.querySelector(`[data-f='${f.k}']`);if(el)obj[f.k]=f.t==='number'?(parseFloat(el.value)||0):el.value;});
+if(!id)DB[key].push(obj);save();closeModal();render();}
 function closeModal(){document.getElementById('modal').classList.add('hidden');}
-function calcTaglio(){const vc=+document.getElementById('vc').value,d=+document.getElementById('d').value,ap=+document.getElementById('ap').value,ae=+document.getElementById('ae').value,fz=+document.getElementById('fz').value,z=+document.getElementById('z').value;const n=1000*vc/(Math.PI*d),vf=n*z*fz,q=ap*ae*vf/1000;document.getElementById('res-taglio').innerHTML=`n = ${n.toFixed(0)} giri/min<br>vf = ${vf.toFixed(0)} mm/min<br>Q = ${q.toFixed(1)} cm³/min`;}
-function calcMaschio(){const md=+document.getElementById('md').value,mp=+document.getElementById('mp').value;const hole=md-mp;document.getElementById('res-maschio').innerHTML=`Foro pre-maschiatura = ${hole.toFixed(2)} mm<br>Usa punta da ${hole.toFixed(1)} mm`;}
-function calcTrapano(){const pd=+document.getElementById('pd').value,pvc=+document.getElementById('pvc').value;const n=1000*pvc/(Math.PI*pd);document.getElementById('res-trapano').innerHTML=`n = ${n.toFixed(0)} giri/min`;}
-function ask(){const q=document.getElementById('ask').value.toLowerCase();let ans='Nessun risultato. Prova con: fresatura, maschiatura, velocità, acciaio.';const hits=DB.knowledge.filter(k=>(k.titolo+' '+k.categoria+' '+k.contenuto).toLowerCase().includes(q));if(q&&hits.length)ans=hits.map(h=>`<b>${esc(h.titolo)}</b><br>${esc(h.contenuto)}`).join('<br><br>');const phits=DB.parametri.filter(p=>Object.values(p).some(v=>String(v).toLowerCase().includes(q)));if(phits.length)ans+='<br><br><b>Parametri trovati</b><br>'+phits.map(p=>`Vc ${p.vc} - Fz ${p.fz} - Ap ${p.ap} - Ae ${p.ae}`).join('<br>');document.getElementById('answer').innerHTML=ans;}
+function calcTaglio(){const vc=+document.getElementById('vc').value,d=+document.getElementById('d').value,ap=+document.getElementById('ap').value,ae=+document.getElementById('ae').value,fz=+document.getElementById('fz').value,z=+document.getElementById('z').value;
+const n=1000*vc/(Math.PI*d),vf=n*z*fz,q=ap*ae*vf/1000;
+document.getElementById('res-taglio').innerHTML=`n = ${n.toFixed(0)} giri/min<br>vf = ${vf.toFixed(0)} mm/min<br>Q = ${q.toFixed(1)} cm³/min`;}
+function calcMaschio(){const md=+document.getElementById('md').value,mp=+document.getElementById('mp').value;const hole=md-mp;
+document.getElementById('res-maschio').innerHTML=`Foro pre-maschiatura = ${hole.toFixed(2)} mm<br>Usa punta da ${hole.toFixed(1)} mm`;}
+function calcTrapano(){const pd=+document.getElementById('pd').value,pvc=+document.getElementById('pvc').value;const n=1000*pvc/(Math.PI*pd);
+document.getElementById('res-trapano').innerHTML=`n = ${n.toFixed(0)} giri/min`;}
+function ask(){const q=document.getElementById('ask').value.toLowerCase();let ans='Nessun risultato. Prova con: fresatura, maschiatura, velocità, acciaio.';
+const hits=DB.knowledge.filter(k=>(k.titolo+' '+k.categoria+' '+k.contenuto).toLowerCase().includes(q));
+if(q&&hits.length)ans=hits.map(h=>`<b>${esc(h.titolo)}</b><br>${esc(h.contenuto)}`).join('<br><br>');
+const phits=DB.parametri.filter(p=>Object.values(p).some(v=>String(v).toLowerCase().includes(q)));
+if(phits.length)ans+='<br><br><b>Parametri trovati</b><br>'+phits.map(p=>`Vc ${p.vc} - Fz ${p.fz} - Ap ${p.ap} - Ae ${p.ae}`).join('<br>');
+document.getElementById('answer').innerHTML=ans;}
 function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bibbia-officina.json';a.click();}
-function render(){renderNav();const c=document.getElementById('content');if(current==='dashboard')c.innerHTML=dashboard();else if(current==='calcolatori')c.innerHTML=calcolatori();else if(current==='settings')c.innerHTML=settingsView();else c.innerHTML=entityView(current);}
+function render(){renderNav();const c=document.getElementById('content');
+if(current==='dashboard')c.innerHTML=dashboard();
+else if(current==='calcolatori')c.innerHTML=calcolatori();
+else if(current==='settings')c.innerHTML=settingsView();
+else c.innerHTML=entityView(current);}
 document.getElementById('nav').addEventListener('click',e=>{const t=e.target.closest('.nav-item');if(t){current=t.dataset.k;render();}});
 document.getElementById('search').addEventListener('input',e=>{query=e.target.value;render();});
-document.getElementById('content').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const act=b.dataset.act,k=b.dataset.k,id=b.dataset.id;if(act==='add')openForm(k);else if(act==='edit')openForm(k,id);else if(act==='del'){if(confirm('Eliminare?')){DB[k]=DB[k].filter(r=>r.id!==id);save();render();}}else if(act==='save')saveEntity(k,id);else if(act==='close')closeModal();else if(act==='calc-taglio')calcTaglio();else if(act==='calc-maschio')calcMaschio();else if(act==='calc-trapano')calcTrapano();else if(act==='ask')ask();else if(act==='export')exportJSON();else if(act==='reset'){if(confirm('Reset?')){localStorage.removeItem(LS);DB=seed();save();render();}}});
+document.getElementById('content').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;
+const act=b.dataset.act,k=b.dataset.k,id=b.dataset.id;
+if(act==='add')openForm(k);
+else if(act==='edit')openForm(k,id);
+else if(act==='del'){if(confirm('Eliminare?')){DB[k]=DB[k].filter(r=>r.id!==id);save();render();}}
+else if(act==='save')saveEntity(k,id);
+else if(act==='close')closeModal();
+else if(act==='calc-taglio')calcTaglio();
+else if(act==='calc-maschio')calcMaschio();
+else if(act==='calc-trapano')calcTrapano();
+else if(act==='ask')ask();
+else if(act==='export')exportJSON();
+else if(act==='reset'){if(confirm('Reset?')){localStorage.removeItem(LS);DB=seed();save();render();}}});
 document.getElementById('content').addEventListener('change',e=>{if(e.target.id==='import'){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{DB=JSON.parse(r.result);save();render();}catch(err){alert('File non valido');}};r.readAsText(f);}});
 save();render();
 </script>
-<script>
-(()=>{
-'use strict';
-const old=document.getElementById('login');if(old)old.remove();
-const overlay=document.createElement('div');overlay.id='login';overlay.style.cssText='position:fixed;inset:0;background:#0f172a;color:#e2e8f0;display:none;align-items:center;justify-content:center;padding:20px;z-index:4000';document.body.append(overlay);
-let selectedId=null;
-function admins(){return (DB.utenti||[]).filter(u=>String(u.ruolo||'').toLowerCase().includes('amministr'));}
-function session(){try{return JSON.parse(sessionStorage.getItem('bibbiaSessione')||'null');}catch(e){return null;}}
-function validUser(){const s=session();if(!s)return null;return (DB.utenti||[]).find(u=>u.id===s.userId)||null;}
-function show(){overlay.style.display='flex';document.body.classList.add('locked');const lo=document.getElementById('logout');if(lo)lo.hidden=true;}
-function hide(){overlay.style.display='none';document.body.classList.remove('locked');const lo=document.getElementById('logout');if(lo)lo.hidden=false;}
-function err(m){const e=overlay.querySelector('.error');if(e)e.textContent=m;}
-function enter(u){if(!u)return;sessionStorage.setItem('bibbiaSessione',JSON.stringify({userId:u.id,at:Date.now()}));localStorage.setItem('bibbiaUtente',JSON.stringify(u));hide();render();}
-function setupAdmin(){overlay.innerHTML='<div class="box" style="width:min(440px,100%);background:#1e293b;border:2px solid #38bdf8;border-radius:16px;padding:22px"><h2>⚙️ Primo avvio</h2><p>Crea il tuo account Amministratore.</p><label>Il tuo nome<input id="fx-name"></label><label>PIN (4-8 cifre)<input id="fx-pin" type="password" inputmode="numeric" maxlength="8"></label><label>Conferma PIN<input id="fx-pin2" type="password" inputmode="numeric" maxlength="8"></label><p class="error" style="color:#fca5a5"></p><button id="fx-create">Crea Amministratore e entra</button></div>';overlay.querySelector('#fx-create').onclick=()=>{const name=overlay.querySelector('#fx-name').value.trim(),pin=overlay.querySelector('#fx-pin').value.trim(),pin2=overlay.querySelector('#fx-pin2').value.trim();if(!name)return err('Inserisci il tuo nome.');if(!/^\d{4,8}$/.test(pin))return err('Il PIN deve avere 4-8 cifre.');if(pin!==pin2)return err('I PIN non coincidono.');const u={id:uid(),nome:name,ruolo:'Amministratore',pin,email:'',note:'Amministratore principale'};DB.utenti=DB.utenti||[];DB.utenti.push(u);save();enter(u);};}
-function loginScreen(){const users=DB.utenti||[];if(users.length===1)selectedId=users[0].id;overlay.innerHTML='<div class="box" style="width:min(440px,100%);background:#1e293b;border:2px solid #38bdf8;border-radius:16px;padding:22px"><h2>🔐 Accedi</h2><p>Seleziona il tuo utente:</p><div id="fx-users">'+users.map(u=>'<button data-user="'+u.id+'" style="display:block;width:100%;margin:8px 0;padding:14px;text-align:left;font-size:18px'+(selectedId===u.id?';outline:3px solid #38bdf8':'')+'">'+esc(u.nome)+'<br><small>'+esc(u.ruolo)+'</small></button>').join('')+'</div><label>PIN<input id="fx-pin" type="password" inputmode="numeric" maxlength="8"></label><p class="error" style="color:#fca5a5"></p><button id="fx-enter">Entra</button></div>';overlay.querySelectorAll('[data-user]').forEach(btn=>btn.onclick=()=>{selectedId=btn.dataset.user;overlay.querySelectorAll('[data-user]').forEach(x=>x.style.outline='');btn.style.outline='3px solid #38bdf8';});const doEnter=()=>{const u=users.find(x=>x.id===selectedId);if(!u)return err('Prima seleziona il tuo utente.');const pin=overlay.querySelector('#fx-pin').value.trim();if(u.pin&&pin!==u.pin)return err('PIN non corretto.');enter(u);};overlay.querySelector('#fx-enter').onclick=doEnter;overlay.querySelector('#fx-pin').onkeydown=e=>{if(e.key==='Enter')doEnter();};}
-function start(){const u=validUser();if(u){localStorage.setItem('bibbiaUtente',JSON.stringify(u));hide();render();return;}show();if(!admins().length)setupAdmin();else loginScreen();}
-const lo=document.getElementById('logout');if(lo)lo.onclick=()=>{sessionStorage.removeItem('bibbiaSessione');localStorage.removeItem('bibbiaUtente');start();};
-start();
-})();
-</script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-ui.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-nav.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-search.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-time.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-roles.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-features.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-pro.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-extra.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-final.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-training.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/production-calcs.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/workshop-update.js'></script>
-<script src='https://raw.githubusercontent.com/v48r57gybb-tech/bibbia-officina/main/smart-ui-polish.js'></script>
 </body>
 </html>
