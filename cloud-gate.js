@@ -28,6 +28,15 @@ function addLogout(){
  b.style.cssText='position:fixed;top:12px;right:12px;z-index:9999;background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35)';
  b.onclick=logout;
  document.body.appendChild(b);
+ hideOtherLogoutButtons();
+ const obs=new MutationObserver(hideOtherLogoutButtons);
+ obs.observe(document.body,{childList:true,subtree:true});
+}
+function hideOtherLogoutButtons(){
+ const mine=document.getElementById('cloud-logout');
+ document.querySelectorAll('button').forEach(b=>{
+ if(b!==mine&&b.textContent.trim().toLowerCase()==='esci')b.style.display='none';
+ });
 }
 function logout(){
  sessionStorage.removeItem(ROLE_KEY);sessionStorage.removeItem('bibbiaSessione');localStorage.removeItem('bibbiaUtente');location.reload();
