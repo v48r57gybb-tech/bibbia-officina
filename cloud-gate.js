@@ -24,7 +24,7 @@ function addLogout(){
  if(document.getElementById('cloud-logout'))return;
  const b=document.createElement('button');
  b.id='cloud-logout';b.textContent='Esci';
- b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9999;background:#ef4444;color:#fff;border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer';
+ b.style.cssText='position:fixed;top:12px;right:12px;z-index:9999;background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.35)';
  b.onclick=()=>{sessionStorage.removeItem(ROLE_KEY);sessionStorage.removeItem('bibbiaSessione');localStorage.removeItem('bibbiaUtente');location.reload();};
  document.body.appendChild(b);
 }
